@@ -205,25 +205,23 @@
           </el-input>
           <el-input-number v-model="batchForm.count" :min="1" :max="50" @change="regenerate"/>
         </div>
-        <el-input v-model="batchForm.password" type="text" :placeholder="$t('batchPassword')" autocomplete="off">
-          <template #append>
-            <el-button @click="randomPwd">{{ $t('batchRandomPwd') }}</el-button>
-          </template>
-        </el-input>
+        <div class="batch-row">
+          <el-input v-model="batchForm.password" type="text" :placeholder="$t('batchPassword')" autocomplete="off"/>
+          <el-button class="batch-pwd-btn" @click="randomPwd">{{ $t('batchRandomPwd') }}</el-button>
+        </div>
         <el-select v-model="batchForm.type" :placeholder="$t('perm')">
           <el-option v-for="item in roleList" :label="item.name" :value="item.roleId" :key="item.roleId"/>
         </el-select>
         <div class="batch-preview">
           <div class="batch-preview-head">
             <span class="batch-label">{{ $t('batchPreview') }}</span>
-            <span class="batch-suffix">@{{ batchForm.suffix }}</span>
             <el-button class="batch-refresh" link type="primary" size="small" @click="regenerate">
               <Icon icon="ion:reload" width="13" height="13" style="margin-right: 3px"/>{{ $t('batchRefresh') }}
             </el-button>
           </div>
           <div class="batch-preview-list">
             <div class="batch-preview-item" v-for="p in batchPreviewList" :key="p">
-              <span class="dot"></span>{{ p }}
+              <span class="dot"></span>{{ p }}<span class="suffix">@{{ batchForm.suffix }}</span>
             </div>
           </div>
           <div class="batch-tip">{{ $t('batchPreviewTip') }}</div>
@@ -1315,7 +1313,6 @@ function adjustWidth() {
   }
 
   .batch-desc {
-    margin-top: -6px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
     line-height: 18px;
@@ -1327,6 +1324,10 @@ function adjustWidth() {
 
     .el-input {
       flex: 1;
+    }
+
+    .el-button {
+      flex-shrink: 0;
     }
   }
 
@@ -1349,12 +1350,6 @@ function adjustWidth() {
       gap: 8px;
       height: 24px;
       margin-bottom: 8px;
-
-      .batch-suffix {
-        font-size: 12px;
-        color: var(--el-text-color-secondary);
-        line-height: 22px;
-      }
 
       .batch-refresh {
         margin-left: auto;
@@ -1450,6 +1445,10 @@ function adjustWidth() {
     &.ok {
       background: var(--el-color-success);
     }
+  }
+
+  .suffix {
+    color: var(--el-text-color-secondary);
   }
 }
 
