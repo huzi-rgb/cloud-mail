@@ -221,7 +221,7 @@
           </div>
           <div class="batch-preview-list">
             <div class="batch-preview-item" v-for="p in batchPreviewList" :key="p">
-              <span class="dot"></span>{{ p }}<span class="suffix">@{{ batchForm.suffix }}</span>
+              <span class="dot"></span>{{ p }}<span class="suffix">{{ batchForm.suffix }}</span>
             </div>
           </div>
           <div class="batch-tip">{{ $t('batchPreviewTip') }}</div>
