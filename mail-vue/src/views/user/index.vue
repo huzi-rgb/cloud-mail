@@ -215,8 +215,9 @@
         </el-select>
         <div class="batch-preview">
           <div class="batch-preview-head">
-            <span class="batch-label">{{ $t('batchPreview') }} · @{{ batchForm.suffix }}</span>
-            <el-button link type="primary" size="small" @click="regenerate">
+            <span class="batch-label">{{ $t('batchPreview') }}</span>
+            <span class="batch-suffix">@{{ batchForm.suffix }}</span>
+            <el-button class="batch-refresh" link type="primary" size="small" @click="regenerate">
               <Icon icon="ion:reload" width="13" height="13" style="margin-right: 3px"/>{{ $t('batchRefresh') }}
             </el-button>
           </div>
@@ -1267,14 +1268,13 @@ function adjustWidth() {
     padding: 0 14px;
     margin: 0;
     border: none;
-    border-radius: 15px;
+    border-radius: 6px;
     color: #fff;
-    font-weight: 600;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
-    background: linear-gradient(135deg, #4f8ef7 0%, #8b5cf6 55%, #d946ef 100%);
-    box-shadow: 0 2px 8px rgba(120, 100, 240, 0.35);
-    transition: all 0.25s ease;
+    background: var(--el-color-primary);
+    transition: all 0.2s ease;
 
     .batch-add-text {
       margin-left: 6px;
@@ -1284,13 +1284,11 @@ function adjustWidth() {
 
     &:hover {
       color: #fff;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.45);
+      background: var(--el-color-primary-light-3);
     }
 
     &:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 6px rgba(120, 100, 240, 0.35);
+      background: var(--el-color-primary-dark-2);
     }
   }
 }
@@ -1311,7 +1309,7 @@ function adjustWidth() {
 
   .batch-mode {
     :deep(.el-segmented__item-selected) {
-      background: linear-gradient(135deg, #4f8ef7 0%, #8b5cf6 100%);
+      background: var(--el-color-primary);
       color: #fff;
     }
   }
@@ -1319,8 +1317,8 @@ function adjustWidth() {
   .batch-desc {
     margin-top: -6px;
     font-size: 12px;
-    color: #909399;
-    line-height: 1.4;
+    color: var(--el-text-color-secondary);
+    line-height: 18px;
   }
 
   .batch-row {
@@ -1335,20 +1333,32 @@ function adjustWidth() {
   .batch-label {
     font-size: 13px;
     font-weight: 600;
-    color: #606266;
+    color: var(--el-text-color-primary);
+    line-height: 22px;
   }
 
   .batch-preview {
-    border: 1px dashed var(--el-border-color);
+    border: 1px solid var(--el-border-color-lighter);
     border-radius: 8px;
-    padding: 10px 12px;
+    padding: 12px;
     background: var(--el-fill-color-lighter);
 
     .batch-preview-head {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 8px;
+      height: 24px;
       margin-bottom: 8px;
+
+      .batch-suffix {
+        font-size: 12px;
+        color: var(--el-text-color-secondary);
+        line-height: 22px;
+      }
+
+      .batch-refresh {
+        margin-left: auto;
+      }
     }
 
     .batch-preview-list {
@@ -1360,9 +1370,10 @@ function adjustWidth() {
     }
 
     .batch-tip {
-      margin-top: 8px;
+      margin-top: 10px;
       font-size: 11px;
-      color: #a8abb2;
+      color: var(--el-text-color-placeholder);
+      line-height: 16px;
     }
   }
 
@@ -1370,21 +1381,20 @@ function adjustWidth() {
     width: 100%;
     height: 38px;
     border: none;
-    border-radius: 19px;
+    border-radius: 8px;
     color: #fff;
-    font-weight: 600;
-    background: linear-gradient(135deg, #4f8ef7 0%, #8b5cf6 55%, #d946ef 100%);
-    box-shadow: 0 2px 10px rgba(120, 100, 240, 0.35);
-    transition: all 0.25s ease;
+    font-weight: 500;
+    font-size: 14px;
+    background: var(--el-color-primary);
+    transition: all 0.2s ease;
 
     &:hover {
       color: #fff;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.45);
+      background: var(--el-color-primary-light-3);
     }
 
     &:active {
-      transform: translateY(0);
+      background: var(--el-color-primary-dark-2);
     }
   }
 
@@ -1427,6 +1437,7 @@ function adjustWidth() {
   gap: 8px;
   font-size: 13px;
   font-family: monospace;
+  line-height: 20px;
   word-break: break-all;
 
   .dot {
@@ -1434,7 +1445,7 @@ function adjustWidth() {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4f8ef7, #8b5cf6);
+    background: var(--el-color-primary);
 
     &.ok {
       background: var(--el-color-success);
