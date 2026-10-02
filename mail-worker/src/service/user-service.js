@@ -351,17 +351,7 @@ const userService = {
 			emails = emails.slice(0, 50);
 		}
 
-		if (!password || password.length < 6) {
-			throw new BizError(t('pwdMinLength'));
-		}
-
-		const role = await roleService.selectById(c, type);
-
-		if (!role) {
-			throw new BizError(t('roleNotExist'));
-		}
-
-		// 挂到当前登录用户名下：只建 account（Inbox 左侧可直接切换收信），不建独立用户
+		// 挂到当前登录用户名下：只建 account（Inbox 左侧可直接切换收信），不建独立用户，无需角色与密码
 		if (attach) {
 			const curUserId = userContext.getUserId(c);
 			const curUser = await userService.selectById(c, curUserId);
@@ -389,6 +379,16 @@ const userService = {
 				}
 			}
 			return { success, fail };
+		}
+
+		if (!password || password.length < 6) {
+			throw new BizError(t('pwdMinLength'));
+		}
+
+		const role = await roleService.selectById(c, type);
+
+		if (!role) {
+			throw new BizError(t('roleNotExist'));
 		}
 
 		const { salt, hash } = await saltHashUtils.hashPassword(password);
