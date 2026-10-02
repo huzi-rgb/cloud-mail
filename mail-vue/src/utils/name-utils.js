@@ -39,13 +39,13 @@ function pad2(n) {
     return String(n).padStart(2, '0')
 }
 
-// 随机外国人名前缀:james.carter;带 prefix 时:shop.james.carter
-// 冲突时追加两位随机数:james.carter42
+// 随机外国人名前缀:jamescarter(名+姓直接连写,不带点)
+// 批内冲突时追加两位数字:jamescarter42
 export function randomNamePrefix(prefix = '', existing = new Set()) {
     for (let i = 0; i < 50; i++) {
-        let name = `${pick(FIRST_NAMES)}.${pick(LAST_NAMES)}`
+        let name = `${pick(FIRST_NAMES)}${pick(LAST_NAMES)}`
         if (prefix) {
-            name = `${prefix}.${name}`
+            name = `${prefix}${name}`
         }
         if (!existing.has(name)) {
             existing.add(name)
@@ -57,7 +57,7 @@ export function randomNamePrefix(prefix = '', existing = new Set()) {
             return candidate
         }
     }
-    const fallback = `${prefix || 'user'}.${Date.now().toString(36)}`
+    const fallback = `${prefix || 'user'}${Date.now().toString(36)}`
     existing.add(fallback)
     return fallback
 }

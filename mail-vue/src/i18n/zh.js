@@ -84,7 +84,7 @@ const zh = {
     batchAddTitle: '批量创建邮箱',
     batchModeName: '随机人名',
     batchModeSeq: '自定义前缀',
-    batchNameModeDesc: '生成如 james.carter 的外国人名前缀',
+    batchNameModeDesc: '生成如 jamescarter 的外国人名前缀',
     batchSeqModeDesc: '使用自定义前缀加序号,如 shop01、shop02',
     batchPrefix: '前缀',
     batchPrefixPh: '可选,如 shop',

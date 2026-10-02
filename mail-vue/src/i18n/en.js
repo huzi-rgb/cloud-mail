@@ -84,7 +84,7 @@ const en = {
     batchAddTitle: 'Batch Create Mailboxes',
     batchModeName: 'Random Names',
     batchModeSeq: 'Custom Prefix',
-    batchNameModeDesc: 'Generate foreign-style name prefixes like james.carter',
+    batchNameModeDesc: 'Generate foreign-style name prefixes like jamescarter',
     batchSeqModeDesc: 'Use a custom prefix with sequence, e.g. shop01, shop02',
     batchPrefix: 'Prefix',
     batchPrefixPh: 'Optional, e.g. shop',
