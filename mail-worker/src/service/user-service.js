@@ -341,7 +341,7 @@ const userService = {
 
 	async addBatch(c, params) {
 
-		let { emails, type, password } = params;
+		let { emails, type, password, mode } = params;
 
 		if (!Array.isArray(emails) || emails.length === 0) {
 			throw new BizError(t('emptyEmailMsg'));
@@ -366,29 +366,54 @@ const userService = {
 		const success = [];
 		const fail = [];
 
+		// 重名时本地部分追加随机两位数字重试,保证随机名模式下创建出的邮箱不重复
+		const createWithRetry = async (email) => {
+			let candidate = email;
+			for (let attempt = 0; attempt <= 8; attempt++) {
+				try {
+					const accountRow = await accountService.selectByEmailIncludeDel(c, candidate);
+
+					if (accountRow && accountRow.isDel === isDel.DELETE) {
+						throw new BizError(t('isDelUser'));
+					}
+
+					if (accountRow) {
+						throw new BizError(t('isRegAccount'));
+					}
+
+					const userId = await userService.insert(c, { email: candidate, password: hash, salt, type });
+
+					await userService.updateUserInfo(c, userId, true);
+
+					await accountService.insert(c, { userId: userId, email: candidate, type, name: emailUtils.getName(candidate) });
+
+					return candidate;
+				} catch (e) {
+					const isDuplicate = e.message === t('isRegAccount');
+					if (mode === 'name' && isDuplicate && attempt < 8) {
+						const [local, domain] = splitEmail(candidate);
+						candidate = `${local}${Math.floor(Math.random() * 90 + 10)}@${domain}`;
+						continue;
+					}
+					throw e;
+				}
+			}
+			throw new BizError(t('isRegAccount'));
+		};
+
+		function splitEmail(email) {
+			const at = email.lastIndexOf('@');
+			return [email.slice(0, at), email.slice(at + 1)];
+		}
+
 		for (const email of emails) {
 			try {
 				if (!c.env.domain.includes(emailUtils.getDomain(email))) {
 					throw new BizError(t('notEmailDomain'));
 				}
 
-				const accountRow = await accountService.selectByEmailIncludeDel(c, email);
-
-				if (accountRow && accountRow.isDel === isDel.DELETE) {
-					throw new BizError(t('isDelUser'));
-				}
-
-				if (accountRow) {
-					throw new BizError(t('isRegAccount'));
-				}
-
-				const userId = await userService.insert(c, { email, password: hash, salt, type });
-
-				await userService.updateUserInfo(c, userId, true);
-
-				await accountService.insert(c, { userId: userId, email, type, name: emailUtils.getName(email) });
-
-				success.push(email);
+				const created = await createWithRetry(email);
+				success.push(created);
 			} catch (e) {
 				fail.push({ email, reason: e.message });
 			}

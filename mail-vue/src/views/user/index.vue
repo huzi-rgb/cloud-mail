@@ -197,7 +197,6 @@
       <div class="batch-container" v-if="!batchResult">
         <el-segmented class="batch-mode" v-model="batchForm.mode" :options="batchModeOptions" block
                       @change="regenerate"/>
-        <div class="batch-desc">{{ batchForm.mode === 'name' ? $t('batchNameModeDesc') : $t('batchSeqModeDesc') }}</div>
         <div class="batch-row">
           <el-input v-model="batchForm.prefix" :placeholder="batchForm.mode === 'name' ? $t('batchPrefixPh') : $t('batchPrefix')"
                     :maxlength="30" @input="regenerate">
@@ -821,7 +820,12 @@ function submitBatch() {
   }
 
   batchLoading.value = true
-  userAddBatch({emails, type: batchForm.type, password: batchForm.password}).then(data => {
+  userAddBatch({
+    emails,
+    type: batchForm.type,
+    password: batchForm.password,
+    mode: batchForm.mode
+  }).then(data => {
     batchResult.value = data
     ElMessage({
       message: t('addSuccessMsg'),

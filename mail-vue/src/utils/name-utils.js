@@ -1,34 +1,25 @@
-// 常见外国人名池,用于批量创建邮箱时生成美观的前缀
+// 文艺感名字池:优雅名 × 文学家姓氏,组合如 ezrawhitman、lunawilde
 const FIRST_NAMES = [
-    'james', 'john', 'robert', 'michael', 'william', 'david', 'richard', 'joseph',
-    'thomas', 'charles', 'daniel', 'matthew', 'anthony', 'mark', 'steven', 'paul',
-    'andrew', 'joshua', 'kenneth', 'kevin', 'brian', 'george', 'edward', 'ronald',
-    'timothy', 'jason', 'jeffrey', 'ryan', 'jacob', 'nicholas', 'eric', 'jonathan',
-    'stephen', 'larry', 'justin', 'scott', 'brandon', 'benjamin', 'samuel', 'gregory',
-    'alexander', 'patrick', 'frank', 'raymond', 'jack', 'dennis', 'jerry', 'tyler',
-    'aaron', 'henry', 'douglas', 'peter', 'adam', 'nathan', 'olivia', 'emma',
-    'charlotte', 'amelia', 'sophia', 'isabella', 'mia', 'evelyn', 'luna', 'harper',
-    'camila', 'sofia', 'scarlett', 'gianna', 'abigail', 'avery', 'ella', 'penelope',
-    'chloe', 'victoria', 'madison', 'eleanor', 'grace', 'nora', 'riley', 'zoey',
-    'hannah', 'hazel', 'lily', 'aurora', 'savannah', 'audrey', 'brooklyn', 'bella',
-    'claire', 'skylar', 'lucy', 'paisley', 'everly', 'anna', 'caroline', 'nova',
-    'genesis', 'emilia', 'kennedy', 'maya', 'willow', 'kinsley', 'naomi', 'aubrey'
+    'ezra', 'silas', 'jasper', 'felix', 'oscar', 'hugo', 'levi', 'asher',
+    'finn', 'rowan', 'arlen', 'orson', 'caspian', 'alastair', 'emrys', 'lorcan',
+    'sebastian', 'theodore', 'augustine', 'evander', 'leander', 'orlando', 'peregrine',
+    'raphael', 'benedict', 'francis', 'laurence', 'vincent', 'gabriel', 'adrian',
+    'iris', 'hazel', 'ivy', 'faye', 'luna', 'stella', 'wren', 'sage',
+    'aurelia', 'seraphina', 'evangeline', 'rosalie', 'juliet', 'viola', 'celeste',
+    'ophelia', 'cordelia', 'mariana', 'elowen', 'aisling', 'freya', 'isolde',
+    'vivienne', 'clementine', 'magnolia', 'dahlia', 'primrose', 'gwendolyn', 'maeve',
+    'sylvie', 'estelle', 'linnet', 'marisol', 'rune', 'elodie', 'sonnet'
 ]
 
 const LAST_NAMES = [
-    'smith', 'johnson', 'williams', 'brown', 'jones', 'garcia', 'miller', 'davis',
-    'rodriguez', 'martinez', 'hernandez', 'lopez', 'gonzalez', 'wilson', 'anderson',
-    'taylor', 'moore', 'jackson', 'martin', 'lee', 'perez', 'thompson', 'white',
-    'harris', 'sanchez', 'clark', 'ramirez', 'lewis', 'robinson', 'walker', 'young',
-    'allen', 'king', 'wright', 'scott', 'torres', 'nguyen', 'hill', 'flores',
-    'green', 'adams', 'nelson', 'baker', 'hall', 'rivera', 'campbell', 'mitchell',
-    'carter', 'roberts', 'gomez', 'phillips', 'evans', 'turner', 'diaz', 'parker',
-    'cruz', 'collins', 'edwards', 'stewart', 'morris', 'murphy', 'cook', 'rogers',
-    'gutierrez', 'ortiz', 'morgan', 'cooper', 'peterson', 'bailey', 'reed', 'kelly',
-    'howard', 'ramos', 'kim', 'cox', 'ward', 'richardson', 'watson', 'brooks',
-    'chavez', 'wood', 'james', 'bennett', 'gray', 'mendoza', 'ruiz', 'hughes',
-    'price', 'alvarez', 'castillo', 'sanders', 'patel', 'myers', 'long', 'ross',
-    'foster', 'jimenez', 'powell', 'jenkins', 'perry', 'russell', 'sullivan', 'bell'
+    'whitman', 'thoreau', 'emerson', 'hawthorne', 'wilde', 'byron', 'shelley',
+    'keats', 'blake', 'milton', 'tennyson', 'browning', 'wordsworth', 'lawrence',
+    'auden', 'eliot', 'frost', 'dickinson', 'plath', 'hughes', 'poe', 'dickens',
+    'bronte', 'austen', 'woolf', 'kafka', 'camus', 'dumas', 'verne', 'tolstoy',
+    'dostoevsky', 'rousseau', 'voltaire', 'cervantes', 'dante', 'homer', 'virgil',
+    'ovid', 'horace', 'seneca', 'rilke', 'neruda', 'borges', 'tagore', 'gibran',
+    'rumi', 'proust', 'flaubert', 'balzac', 'zola', 'hugo', 'merle', 'puskin',
+    'lermontov', 'yesenin', 'blok', 'akhmatova', 'tsvetaeva', 'pasternak', 'roerich'
 ]
 
 function pick(list) {
