@@ -339,6 +339,64 @@ const userService = {
 		await accountService.insert(c, { userId: userId, email, type, name: emailUtils.getName(email) });
 	},
 
+	async addBatch(c, params) {
+
+		let { emails, type, password } = params;
+
+		if (!Array.isArray(emails) || emails.length === 0) {
+			throw new BizError(t('emptyEmailMsg'));
+		}
+
+		if (emails.length > 50) {
+			emails = emails.slice(0, 50);
+		}
+
+		if (!password || password.length < 6) {
+			throw new BizError(t('pwdMinLength'));
+		}
+
+		const role = await roleService.selectById(c, type);
+
+		if (!role) {
+			throw new BizError(t('roleNotExist'));
+		}
+
+		const { salt, hash } = await saltHashUtils.hashPassword(password);
+
+		const success = [];
+		const fail = [];
+
+		for (const email of emails) {
+			try {
+				if (!c.env.domain.includes(emailUtils.getDomain(email))) {
+					throw new BizError(t('notEmailDomain'));
+				}
+
+				const accountRow = await accountService.selectByEmailIncludeDel(c, email);
+
+				if (accountRow && accountRow.isDel === isDel.DELETE) {
+					throw new BizError(t('isDelUser'));
+				}
+
+				if (accountRow) {
+					throw new BizError(t('isRegAccount'));
+				}
+
+				const userId = await userService.insert(c, { email, password: hash, salt, type });
+
+				await userService.updateUserInfo(c, userId, true);
+
+				await accountService.insert(c, { userId: userId, email, type, name: emailUtils.getName(email) });
+
+				success.push(email);
+			} catch (e) {
+				fail.push({ email, reason: e.message });
+			}
+		}
+
+		return { success, fail };
+	},
+
 	async resetDaySendCount(c) {
 		const roleList = await roleService.selectByIdsAndSendType(c, 'email:send', roleConst.sendType.DAY);
 		const roleIds = roleList.map(action => action.roleId);

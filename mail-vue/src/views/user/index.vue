@@ -2,6 +2,12 @@
   <div class="user-box">
     <div class="header-actions">
       <Icon class="icon" icon="ion:add-outline" width="23" height="23" @click="openAdd"/>
+      <el-tooltip :content="$t('batchAddUser')" placement="bottom">
+        <el-button class="batch-add-btn" @click="openBatchAdd">
+          <Icon icon="fluent:people-add-20-filled" width="17" height="17"/>
+          <span class="batch-add-text">{{ $t('batchAddUser') }}</span>
+        </el-button>
+      </el-tooltip>
       <div class="search">
         <el-input
             v-model="params.email"
@@ -185,6 +191,64 @@
         <el-button class="btn" type="primary" @click="submit" :loading="addLoading"
         >{{ $t('add') }}
         </el-button>
+      </div>
+    </el-dialog>
+    <el-dialog class="batch-dialog" v-model="batchShow" :title="$t('batchAddTitle')" @closed="resetBatchForm">
+      <div class="batch-container" v-if="!batchResult">
+        <el-segmented class="batch-mode" v-model="batchForm.mode" :options="batchModeOptions" block
+                      @change="regenerate"/>
+        <div class="batch-desc">{{ batchForm.mode === 'name' ? $t('batchNameModeDesc') : $t('batchSeqModeDesc') }}</div>
+        <div class="batch-row">
+          <el-input v-model="batchForm.prefix" :placeholder="batchForm.mode === 'name' ? $t('batchPrefixPh') : $t('batchPrefix')"
+                    :maxlength="30" @input="regenerate">
+            <template #prepend>{{ $t('batchPrefix') }}</template>
+          </el-input>
+          <el-input-number v-model="batchForm.count" :min="1" :max="50" @change="regenerate"/>
+        </div>
+        <el-input v-model="batchForm.password" type="text" :placeholder="$t('batchPassword')" autocomplete="off">
+          <template #append>
+            <el-button @click="randomPwd">{{ $t('batchRandomPwd') }}</el-button>
+          </template>
+        </el-input>
+        <el-select v-model="batchForm.type" :placeholder="$t('perm')">
+          <el-option v-for="item in roleList" :label="item.name" :value="item.roleId" :key="item.roleId"/>
+        </el-select>
+        <div class="batch-preview">
+          <div class="batch-preview-head">
+            <span class="batch-label">{{ $t('batchPreview') }} · @{{ batchForm.suffix }}</span>
+            <el-button link type="primary" size="small" @click="regenerate">
+              <Icon icon="ion:reload" width="13" height="13" style="margin-right: 3px"/>{{ $t('batchRefresh') }}
+            </el-button>
+          </div>
+          <div class="batch-preview-list">
+            <div class="batch-preview-item" v-for="p in batchPreviewList" :key="p">
+              <span class="dot"></span>{{ p }}
+            </div>
+          </div>
+          <div class="batch-tip">{{ $t('batchPreviewTip') }}</div>
+        </div>
+        <el-button class="batch-submit" type="primary" :loading="batchLoading" @click="submitBatch">
+          {{ $t('batchSubmit') }} ({{ batchPreviewList.length }})
+        </el-button>
+      </div>
+      <div class="batch-container" v-else>
+        <el-result icon="success" :title="$t('batchResultOk', {n: batchResult.success.length})"
+                   v-if="batchResult.success.length">
+          <template #sub-title>
+            <div class="batch-ok-list">
+              <div class="batch-preview-item" v-for="e in batchResult.success" :key="e">
+                <span class="dot ok"></span>{{ e }}
+              </div>
+            </div>
+          </template>
+        </el-result>
+        <div class="batch-fail" v-if="batchResult.fail.length">
+          <div class="batch-label fail-label">{{ $t('batchResultFail', {n: batchResult.fail.length}) }}</div>
+          <div class="batch-fail-item" v-for="f in batchResult.fail" :key="f.email">
+            {{ f.email }}<span class="fail-reason">{{ f.reason }}</span>
+          </div>
+        </div>
+        <el-button class="btn" type="primary" @click="batchShow = false">{{ $t('batchClose') }}</el-button>
       </div>
     </el-dialog>
     <el-dialog class="account-dialog" v-model="accountShow" :title="t('userAccount')" @closed="resetAccountList" >
@@ -373,6 +437,7 @@ import {
   userSetStatus,
   userSetType,
   userAdd,
+  userAddBatch,
   userRestSendCount,
   userRestore,
   userDeleteAccount,
@@ -387,6 +452,8 @@ import {isEmail} from "@/utils/verify-utils.js";
 import {useRoleStore} from "@/store/role.js";
 import {useUserStore} from "@/store/user.js";
 import {useI18n} from 'vue-i18n';
+import {computed} from 'vue'
+import {generatePrefixes, randomPassword} from '@/utils/name-utils.js'
 
 defineOptions({
   name: 'user'
@@ -689,6 +756,92 @@ function resetAddForm() {
 
 function openAdd() {
   showAdd.value = true
+}
+
+const batchShow = ref(false)
+const batchLoading = ref(false)
+const batchResult = ref(null)
+const batchPreviewList = ref([])
+const batchForm = reactive({
+  mode: 'name',
+  prefix: '',
+  count: 10,
+  suffix: settingStore.domainList[0],
+  password: '',
+  type: null,
+})
+
+const batchModeOptions = computed(() => [
+  {label: t('batchModeName'), value: 'name'},
+  {label: t('batchModeSeq'), value: 'seq'}
+])
+
+function openBatchAdd() {
+  randomPwd()
+  regenerate()
+  batchShow.value = true
+}
+
+function regenerate() {
+  const prefix = batchForm.prefix.trim().toLowerCase()
+  const count = Math.min(Math.max(Number(batchForm.count) || 1, 1), 50)
+  batchPreviewList.value = generatePrefixes({count, prefix, mode: batchForm.mode})
+}
+
+function randomPwd() {
+  batchForm.password = randomPassword()
+}
+
+function submitBatch() {
+  const prefix = batchForm.prefix.trim().toLowerCase()
+
+  if (prefix && !/^[a-z0-9][a-z0-9._-]*$/.test(prefix)) {
+    ElMessage({message: t('batchPrefixInvalid'), type: 'error', plain: true})
+    return
+  }
+
+  if (batchForm.mode === 'seq' && !prefix) {
+    ElMessage({message: t('batchPrefixRequired'), type: 'error', plain: true})
+    return
+  }
+
+  if (!batchForm.type) {
+    ElMessage({message: t('emptyRole'), type: 'error', plain: true})
+    return
+  }
+
+  if (!batchForm.password || batchForm.password.length < 6) {
+    ElMessage({message: t('pwdLengthMsg'), type: 'error', plain: true})
+    return
+  }
+
+  const emails = batchPreviewList.value.map(p => p + batchForm.suffix)
+
+  if (emails.length === 0) {
+    return
+  }
+
+  batchLoading.value = true
+  userAddBatch({emails, type: batchForm.type, password: batchForm.password}).then(data => {
+    batchResult.value = data
+    ElMessage({
+      message: t('addSuccessMsg'),
+      type: 'success',
+      plain: true
+    })
+    getUserList(false)
+  }).finally(() => {
+    batchLoading.value = false
+  })
+}
+
+function resetBatchForm() {
+  batchResult.value = null
+  batchForm.mode = 'name'
+  batchForm.prefix = ''
+  batchForm.count = 10
+  batchForm.type = null
+  batchPreviewList.value = []
 }
 
 function submit() {
@@ -1107,6 +1260,185 @@ function adjustWidth() {
 
   .icon {
     cursor: pointer;
+  }
+
+  .batch-add-btn {
+    height: 30px;
+    padding: 0 14px;
+    margin: 0;
+    border: none;
+    border-radius: 15px;
+    color: #fff;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #4f8ef7 0%, #8b5cf6 55%, #d946ef 100%);
+    box-shadow: 0 2px 8px rgba(120, 100, 240, 0.35);
+    transition: all 0.25s ease;
+
+    .batch-add-text {
+      margin-left: 6px;
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    &:hover {
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.45);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(120, 100, 240, 0.35);
+    }
+  }
+}
+
+:deep(.batch-dialog) {
+  width: 480px !important;
+  @media (max-width: 540px) {
+    width: calc(100% - 40px) !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
+  }
+}
+
+.batch-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+
+  .batch-mode {
+    :deep(.el-segmented__item-selected) {
+      background: linear-gradient(135deg, #4f8ef7 0%, #8b5cf6 100%);
+      color: #fff;
+    }
+  }
+
+  .batch-desc {
+    margin-top: -6px;
+    font-size: 12px;
+    color: #909399;
+    line-height: 1.4;
+  }
+
+  .batch-row {
+    display: flex;
+    gap: 10px;
+
+    .el-input {
+      flex: 1;
+    }
+  }
+
+  .batch-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #606266;
+  }
+
+  .batch-preview {
+    border: 1px dashed var(--el-border-color);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: var(--el-fill-color-lighter);
+
+    .batch-preview-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .batch-preview-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 150px;
+      overflow: auto;
+    }
+
+    .batch-tip {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #a8abb2;
+    }
+  }
+
+  .batch-submit {
+    width: 100%;
+    height: 38px;
+    border: none;
+    border-radius: 19px;
+    color: #fff;
+    font-weight: 600;
+    background: linear-gradient(135deg, #4f8ef7 0%, #8b5cf6 55%, #d946ef 100%);
+    box-shadow: 0 2px 10px rgba(120, 100, 240, 0.35);
+    transition: all 0.25s ease;
+
+    &:hover {
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.45);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .batch-ok-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 180px;
+    overflow: auto;
+    text-align: left;
+  }
+
+  .batch-fail {
+    border: 1px solid var(--el-color-danger-light-7);
+    background: var(--el-color-danger-light-9);
+    border-radius: 8px;
+    padding: 10px 12px;
+
+    .fail-label {
+      color: var(--el-color-danger);
+    }
+
+    .batch-fail-item {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--el-color-danger);
+      word-break: break-all;
+
+      .fail-reason {
+        margin-left: 6px;
+        opacity: 0.75;
+      }
+    }
+  }
+}
+
+.batch-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-family: monospace;
+  word-break: break-all;
+
+  .dot {
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f8ef7, #8b5cf6);
+
+    &.ok {
+      background: var(--el-color-success);
+    }
   }
 }
 

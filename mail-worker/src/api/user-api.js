@@ -34,6 +34,11 @@ app.post('/user/add', async (c) => {
 	return c.json(result.ok());
 });
 
+app.post('/user/addBatch', async (c) => {
+	const data = await userService.addBatch(c, await c.req.json());
+	return c.json(result.ok(data));
+});
+
 app.put('/user/resetSendCount', async (c) => {
 	await userService.resetSendCount(c, await c.req.json());
 	return c.json(result.ok());
