@@ -341,7 +341,7 @@ const userService = {
 
 	async addBatch(c, params) {
 
-		let { emails, type, password, mode } = params;
+		let { emails, type, password, mode, attach } = params;
 
 		if (!Array.isArray(emails) || emails.length === 0) {
 			throw new BizError(t('emptyEmailMsg'));
@@ -359,6 +359,36 @@ const userService = {
 
 		if (!role) {
 			throw new BizError(t('roleNotExist'));
+		}
+
+		// 挂到当前登录用户名下：只建 account（Inbox 左侧可直接切换收信），不建独立用户
+		if (attach) {
+			const curUserId = userContext.getUserId(c);
+			const curUser = await userService.selectById(c, curUserId);
+			if (!curUser) {
+				throw new BizError(t('authExpired'), 401);
+			}
+			const success = [];
+			const fail = [];
+			for (const email of emails) {
+				try {
+					if (!c.env.domain.includes(emailUtils.getDomain(email))) {
+						throw new BizError(t('notEmailDomain'));
+					}
+					const accountRow = await accountService.selectByEmailIncludeDel(c, email);
+					if (accountRow && accountRow.isDel === isDel.DELETE) {
+						throw new BizError(t('isDelUser'));
+					}
+					if (accountRow) {
+						throw new BizError(t('isRegAccount'));
+					}
+					await accountService.insert(c, { userId: curUserId, email, type: curUser.type, name: emailUtils.getName(email) });
+					success.push(email);
+				} catch (e) {
+					fail.push({ email, reason: e.message });
+				}
+			}
+			return { success, fail };
 		}
 
 		const { salt, hash } = await saltHashUtils.hashPassword(password);

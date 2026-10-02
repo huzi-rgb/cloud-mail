@@ -211,6 +211,8 @@
         <el-select v-model="batchForm.type" :placeholder="$t('perm')">
           <el-option v-for="item in roleList" :label="item.name" :value="item.roleId" :key="item.roleId"/>
         </el-select>
+        <el-segmented class="batch-mode" v-model="batchForm.attach" :options="attachOptions" block/>
+        <div class="batch-desc">{{ batchForm.attach ? $t('batchAttachMineDesc') : $t('batchAttachOwnDesc') }}</div>
         <div class="batch-preview">
           <div class="batch-preview-head">
             <span class="batch-label">{{ $t('batchPreview') }}</span>
@@ -767,11 +769,17 @@ const batchForm = reactive({
   suffix: settingStore.domainList[0],
   password: '',
   type: null,
+  attach: true,
 })
 
 const batchModeOptions = computed(() => [
   {label: t('batchModeName'), value: 'name'},
   {label: t('batchModeSeq'), value: 'seq'}
+])
+
+const attachOptions = computed(() => [
+  {label: t('batchAttachMine'), value: true},
+  {label: t('batchAttachOwn'), value: false}
 ])
 
 function openBatchAdd() {
@@ -803,14 +811,16 @@ function submitBatch() {
     return
   }
 
-  if (!batchForm.type) {
-    ElMessage({message: t('emptyRole'), type: 'error', plain: true})
-    return
-  }
+  if (!batchForm.attach) {
+    if (!batchForm.type) {
+      ElMessage({message: t('emptyRole'), type: 'error', plain: true})
+      return
+    }
 
-  if (!batchForm.password || batchForm.password.length < 6) {
-    ElMessage({message: t('pwdLengthMsg'), type: 'error', plain: true})
-    return
+    if (!batchForm.password || batchForm.password.length < 6) {
+      ElMessage({message: t('pwdLengthMsg'), type: 'error', plain: true})
+      return
+    }
   }
 
   const emails = batchPreviewList.value.map(p => p + batchForm.suffix)
@@ -824,7 +834,8 @@ function submitBatch() {
     emails,
     type: batchForm.type,
     password: batchForm.password,
-    mode: batchForm.mode
+    mode: batchForm.mode,
+    attach: batchForm.attach
   }).then(data => {
     batchResult.value = data
     ElMessage({
@@ -844,6 +855,7 @@ function resetBatchForm() {
   batchForm.prefix = ''
   batchForm.count = 10
   batchForm.type = null
+  batchForm.attach = true
   batchPreviewList.value = []
 }
 
